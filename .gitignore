@@ -1,0 +1,38 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# ---- Test / tooling ----
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ---- Secrets (never commit real keys) ----
+.env
+.env.*
+!.env.example
+
+# ---- Runtime artifacts (transcription cache, temp files, saved wizard config) ----
+output/
+src/media_to_markdown/configs/.config/
+*.local.json
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# ---- Local display-name hard links (see README naming convention) ----
+READEME_*

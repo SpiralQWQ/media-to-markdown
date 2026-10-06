@@ -1,0 +1,28 @@
+name: tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: install (package + test deps; the ASR extra is not needed by the suite)
+        run: pip install -e ".[dev]"
+      - name: syntax check (catches syntax that only parses on 3.12+)
+        run: python -m compileall -q src
+      - name: unit tests
+        run: python -m pytest tests -q
+      - name: entry point smoke test
+        run: python -m media_to_markdown --version

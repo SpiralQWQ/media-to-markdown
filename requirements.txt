@@ -1,0 +1,22 @@
+# 依赖清单（与 pyproject.toml 的 [project.dependencies] + [project.optional-dependencies] 一致）
+# 推荐安装：pip install -e .            仅 OCR + 清洗（视频抽帧、图集）
+#           pip install -e ".[asr]"     再加语音转写（FunASR + PyTorch，较重）
+# 本文件供习惯 `pip install -r requirements.txt` 的用户使用，内容与上者等价。
+
+# ---- Core (always required) ----
+numpy>=1.24
+python-dotenv>=1.0
+pypinyin>=0.51
+rapidfuzz>=3.0
+opencv-python>=4.8
+
+# ---- OCR engine: video frames + image albums (free, ONNX, CPU-friendly) ----
+rapidocr-onnxruntime>=1.3
+
+# ---- ASR engine: video / audio transcription (heavy — pulls PyTorch) ----
+funasr>=1.0
+soundfile>=0.12
+torch>=2.0
+
+# ---- Optional: GLM scene understanding for --glm yes (paid API, key via env) ----
+# No extra package needed — uses urllib from the standard library.
