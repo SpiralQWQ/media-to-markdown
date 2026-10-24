@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from media_to_markdown.clean import clean_segment
+from media_to_markdown.clean import clean_segment, strip_leading_punct
 from media_to_markdown.clean.transcript import clean_transcript_json
 from media_to_markdown.assemble.interleave import assemble_interleaved
 from media_to_markdown.engines.asr import _normalize_english_case
@@ -27,6 +27,38 @@ class TestCleanSegmentUnicode(unittest.TestCase):
     def test_still_drops_punctuation_only(self):
         for s in ["。。。", ",,,", "   ", "★☆", "", None]:
             self.assertEqual(clean_segment(s), "", "应清空: %r" % s)
+
+
+class TestLeadingPunct(unittest.TestCase):
+    """ASR breaks a sentence after 「。」, so the next sentence can start with a
+    leftover punctuation mark.
+
+    ``_PUNCT_PAIRS`` only handles two-character combinations, and ``str.strip()``
+    strips whitespace rather than punctuation, so a sentence-initial comma used
+    to survive cleaning and reach the markdown timeline verbatim. Measured on a
+    9-minute video: 41 of 265 sentences started with punctuation, 22 of them
+    still visible in the rendered timeline.
+    """
+
+    def test_sentence_initial_comma_is_dropped(self):
+        self.assertEqual(clean_segment("，把相关当成因果。"), "把相关当成因果。")
+
+    def test_run_of_leading_marks_is_dropped_whole(self):
+        # norm_punct collapses 「。，」 to 「。」 first, so both marks must go.
+        self.assertEqual(clean_segment("。，把相关当成因果。"), "把相关当成因果。")
+
+    def test_strip_leading_punct_only_touches_the_head(self):
+        self.assertEqual(strip_leading_punct("，句中还有，句尾也有，"),
+                         "句中还有，句尾也有，")
+
+    def test_text_without_leading_mark_is_untouched(self):
+        for s in ["请问问题中的意思？", "正常句子，中间有逗号。", "Привет мир"]:
+            self.assertEqual(clean_segment(s), s, "不该被改: %r" % s)
+
+    def test_punctuation_only_segment_still_empties(self):
+        # Dropping the head must not leave a half-empty string behind.
+        self.assertEqual(clean_segment("，，，"), "")
+        self.assertEqual(clean_segment("。"), "")
 
 
 class TestTranscriptNullCollections(unittest.TestCase):
